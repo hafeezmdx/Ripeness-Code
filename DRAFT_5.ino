@@ -17,7 +17,7 @@ unsigned long lastTimeButtonStateChanged = 0;
 
 int stepCount = 0;  // number of steps the motor has taken
 
-enum State_enum {STOP, FORWARD, PROBE_FORWARD, PROBE_BACK};
+enum State_enum {STOP, TOUCH_DETECTED, PROBE_FORWARD, PROBE_BACK};
 
 uint8_t state = STOP;
 
@@ -51,14 +51,14 @@ void state_machine_run() {
           lastButtonState = buttonState;
           if (buttonState == LOW) {
             motors_forward();
-            state = FORWARD;
+            state = TOUCH_DETECTED;
           }
         }
       }
       break;
 
-    case FORWARD:
-      if (sensors > 0) {
+    case TOUCH_DETECTED:
+      if (sensors >= 0) {
         motors_stop();
         state = PROBE_FORWARD;
       }
@@ -66,7 +66,7 @@ void state_machine_run() {
 
     case PROBE_FORWARD:
 
-      digitalWrite(dirPin, HIGH);
+      digitalWrite(dirPin, LOW);
       for (int x = 0; x < 100; x++) {
         digitalWrite(stepPin, HIGH);
         delayMicroseconds(500);
@@ -78,8 +78,12 @@ void state_machine_run() {
       break;
 
     case PROBE_BACK:
-      if (sensors > 900 )
-      {
+       digitalWrite(dirPin, HIGH);
+      for (int x = 0; x < 200; x++) {
+        digitalWrite(stepPin, HIGH);
+        delayMicroseconds(500);
+        digitalWrite(stepPin, LOW);
+        delayMicroseconds(500);
         motors_back();
         state = STOP;
       }
@@ -116,25 +120,18 @@ void motors_stop()
 }
 void motors_probe()
 {
-  if (sensors < 800) {
-    Serial.println(" - unriped peach");
-  } else if (sensors < 850) {
-    Serial.println(" - riped peach");
-  } else if (sensors < 900) {
-    Serial.println(" - over riped peach");
-  }
+  if (sensors > 740) {
+    Serial.println(" - unripped peach");
+  } else if (sensors < 750) {
+    Serial.println(" - ripped peach");
+  } 
   delay(1000);
 
 
 }
 void motors_back()
 {
-  //code for turning back
-  digitalWrite(dirPin, HIGH); // Enables the motor to move in a particular direction
-  for (int x = 0; x < 100; x++) {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(500);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(500);
+  if (sensors >= 0) {
+    Serial.println(" - Moving back");
   }
 }
