@@ -121,9 +121,9 @@ void motors_stop()
 void motors_probe()
 {
   if (sensors > 740) {
-    Serial.println(" - unripped peach");
-  } else if (sensors < 750) {
     Serial.println(" - ripped peach");
+  } else if (sensors < 750) {
+    Serial.println(" - unripped peach");
   } 
   delay(1000);
 
